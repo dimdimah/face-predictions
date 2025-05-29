@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased`} suppressHydrationWarning>
         {children}
         {/* Toaster can be here or at page level. If most pages use toast, here is fine. 
             The current page.tsx includes it, which is also acceptable for a single-page focus.
