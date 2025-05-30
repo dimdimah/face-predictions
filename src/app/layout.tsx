@@ -19,13 +19,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className={`font-sans antialiased`} suppressHydrationWarning>
         {children}
-        {/* Toaster can be here or at page level. If most pages use toast, here is fine. 
-            The current page.tsx includes it, which is also acceptable for a single-page focus.
-            For consistency, if the app grows, having it here would be better.
-            However, the user's scaffold already has a Toaster component that relies on a hook,
-            so placing <Toaster /> in page.tsx where useToast is called is idiomatic for shadcn.
-            Let's keep it in page.tsx as per the current page structure.
-        */}
+        <Toaster />
       </body>
     </html>
   );

@@ -1,5 +1,4 @@
-# Firebase Studio
+# Emotional Recognition
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+## static data
+- projek ini hanya menggunakan data static yang disimpan pada state

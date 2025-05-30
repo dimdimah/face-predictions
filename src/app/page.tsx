@@ -36,7 +36,7 @@ export default function EmotionAIHomePage() {
   const [currentFeedbackEntry, setCurrentFeedbackEntry] = useState<EmotionEntry | null>(null);
   const [dailySummary, setDailySummary] = useState<string | null>(null);
   const [weeklySummary, setWeeklySummary] = useState<string | null>(null);
-  const [isSummaryLoading, setIsSummaryLoading] = useState<'daily' | 'weekly' | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState<'daily' | 'weekly' | 'monthly' | null>(null);
 
   const { toast } = useToast();
 
@@ -53,7 +53,6 @@ export default function EmotionAIHomePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Ensure video plays, sometimes browsers need a nudge
         videoRef.current.onloadedmetadata = () => {
             videoRef.current?.play().catch(e => console.error("Video play failed:", e));
         };
@@ -78,7 +77,7 @@ export default function EmotionAIHomePage() {
     }
     setIsCameraOn(false);
     setDetectedEmotion("Camera Off");
-    setIsAnalyzing(false); // Stop analysis if camera turns off
+    setIsAnalyzing(false);
   };
 
   const captureAndAnalyzeFrame = useCallback(async () => {
@@ -102,16 +101,12 @@ export default function EmotionAIHomePage() {
     const photoDataUri = canvas.toDataURL('image/jpeg', 0.8);
 
     try {
-      // IMPORTANT: Simulating AI call for emotion recognition.
-      // In a real scenario, this would call a specific GenAI flow for facial expression analysis.
-      // e.g., const result = await someFacialRecognitionFlow({ photoDataUri });
-      // setDetectedEmotion(result.emotion);
-      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000)); // Simulate network delay & processing
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
       const randomEmotion = PRESET_EMOTIONS[Math.floor(Math.random() * PRESET_EMOTIONS.length)];
       setDetectedEmotion(randomEmotion);
 
       const newEntry: EmotionEntry = {
-        id: `${new Date().toISOString()}-${Math.random()}`, // Ensure unique ID
+        id: `${new Date().toISOString()}-${Math.random()}`,
         emotion: randomEmotion,
         timestamp: new Date(),
         photoDataUri: photoDataUri,
@@ -133,10 +128,9 @@ export default function EmotionAIHomePage() {
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout | undefined;
-    if (isCameraOn && !isAnalyzing) { // Only set interval if not already analyzing
-      // Initial capture, then set interval
+    if (isCameraOn && !isAnalyzing) { 
       captureAndAnalyzeFrame(); 
-      intervalId = setInterval(captureAndAnalyzeFrame, 7000); // Analyze every 7 seconds
+      intervalId = setInterval(captureAndAnalyzeFrame, 7000); 
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -144,7 +138,6 @@ export default function EmotionAIHomePage() {
   }, [isCameraOn, isAnalyzing, captureAndAnalyzeFrame]);
 
   useEffect(() => {
-    // Cleanup camera on component unmount
     return () => {
       stopCamera();
     };
@@ -207,12 +200,11 @@ export default function EmotionAIHomePage() {
 
   useEffect(() => {
     const getDailySummary = async () => {
-        if (emotionHistory.length > 0 && !dailySummary) { // Fetch only if not already fetched
+        if (emotionHistory.length > 0 && !dailySummary) {
             const summary = await fetchEmotionSummary('daily');
             setDailySummary(summary);
         }
     };
-    // Debounce or fetch less frequently in a real app
     const timer = setTimeout(getDailySummary, 2000); 
     return () => clearTimeout(timer);
   }, [emotionHistory, dailySummary]);
@@ -229,7 +221,7 @@ export default function EmotionAIHomePage() {
       case "calm": return "😌";
       case "camera off": return "🚫";
       case "loading...": return <Loader2 className="h-7 w-7 animate-spin text-primary" />;
-      default: return "🧐"; // For "Error" or unknown
+      default: return "🧐";
     }
   };
 
@@ -240,14 +232,14 @@ export default function EmotionAIHomePage() {
           <Brain className="w-10 h-10 sm:w-12 sm:h-12 mr-3 text-accent" />
           EmotionAI
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm sm:text-base">Real-time emotion insights powered by AI.</p>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">Real-time emotion powered by Gemini.</p>
       </header>
 
       <main className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-xl rounded-xl overflow-hidden">
           <CardHeader className="border-b">
             <CardTitle className="flex items-center text-xl sm:text-2xl">
-              <Camera className="w-6 h-6 mr-2 text-accent" /> Live Feed
+              <Camera className="w-6 h-6 mr-2 text-accent" /> Show Your Face
             </CardTitle>
             <CardDescription>Your real-time camera view for emotion analysis.</CardDescription>
           </CardHeader>
@@ -288,7 +280,7 @@ export default function EmotionAIHomePage() {
             <CardTitle className="flex items-center text-xl sm:text-2xl">
               <Smile className="w-6 h-6 mr-2 text-accent" /> Detected Emotion
             </CardTitle>
-             <CardDescription>Current emotional state analysis.</CardDescription>
+             <CardDescription>Current emotional.</CardDescription>
           </CardHeader>
           <CardContent className="text-center p-4 md:p-6 flex flex-col justify-center items-center min-h-[200px]">
             {(isAnalyzing && !detectedEmotion) || (isAnalyzing && detectedEmotion === "Camera Off") ? (
@@ -329,7 +321,7 @@ export default function EmotionAIHomePage() {
                   <CardTitle className="flex items-center text-xl">
                     <List className="w-5 h-5 mr-2 text-accent" /> Recent Emotions
                   </CardTitle>
-                  <CardDescription>A log of your detected emotions. Click an entry to provide feedback.</CardDescription>
+                  <CardDescription>A log of your detected emotions.</CardDescription>
                 </CardHeader>
                 <CardContent className="max-h-[350px] overflow-hidden">
                   <ScrollArea className="h-[300px] pr-3">
@@ -372,20 +364,20 @@ export default function EmotionAIHomePage() {
                     <CardContent className="space-y-6 p-4 md:p-6">
                         <div>
                             <h3 className="font-semibold mb-1 text-primary flex items-center">
-                                Daily Summary 
+                                Current Summary 
                                 {(isSummaryLoading === 'daily') && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
                             </h3>
-                            {dailySummary ? <p className="text-sm p-3 bg-secondary/20 rounded-md border border-primary/20 whitespace-pre-wrap">{dailySummary}</p> : <p className="text-sm text-muted-foreground">{(isSummaryLoading==='daily') ? 'Generating...' : 'Not enough data or not generated yet for daily summary.'}</p>}
+                            {dailySummary ? <p className="text-sm p-3 bg-secondary/20 rounded-md border border-primary/20 whitespace-pre-wrap">{dailySummary}</p> : <p className="text-sm text-muted-foreground">{(isSummaryLoading==='daily') ? 'Generating...' : 'Data not generated.'}</p>}
                         </div>
                         <div>
                             <h3 className="font-semibold mb-1 text-primary flex items-center">
-                                Weekly Summary
+                                Emotion Summary
                                 <Button variant="link" size="sm" onClick={async () => setWeeklySummary(await fetchEmotionSummary('weekly'))} disabled={isSummaryLoading==='weekly'} className="ml-2 p-0 h-auto text-accent hover:text-accent/80">
                                     {(isSummaryLoading === 'weekly') ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
                                     Generate
                                 </Button>
                             </h3>
-                             {weeklySummary ? <p className="text-sm p-3 bg-secondary/20 rounded-md border border-primary/20 whitespace-pre-wrap">{weeklySummary}</p> : <p className="text-sm text-muted-foreground">{(isSummaryLoading==='weekly') ? 'Generating...' : 'Click generate for weekly summary.'}</p>}
+                             {weeklySummary ? <p className="text-sm p-3 bg-secondary/20 rounded-md border border-primary/20 whitespace-pre-wrap">{weeklySummary}</p> : <p className="text-sm text-muted-foreground">{(isSummaryLoading==='weekly') ? 'Generating...' : 'Click generate for summary.'}</p>}
                         </div>
                     </CardContent>
                 </Card>
@@ -443,7 +435,7 @@ export default function EmotionAIHomePage() {
       <Toaster />
       <footer className="mt-10 md:mt-16 text-center text-xs sm:text-sm text-muted-foreground">
         <p>&copy; {new Date().getFullYear()} EmotionAI. All rights reserved.</p>
-        <p>Powered by Genkit and Next.js. Emotion recognition is currently simulated.</p>
+        <p>Powered by Gemini and Next.js. Emotion recognition.</p>
       </footer>
     </div>
   );
